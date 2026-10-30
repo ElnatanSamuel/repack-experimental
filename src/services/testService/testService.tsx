@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  Platform,
+  StatusBar,
+  BackHandler,
 } from 'react-native';
 
 export default function TestServiceScreen({ onBack }: { onBack?: () => void }) {
   const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!onBack) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      onBack();
+      return true;
+    });
+    return () => sub.remove();
+  }, [onBack]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -17,6 +29,7 @@ export default function TestServiceScreen({ onBack }: { onBack?: () => void }) {
           <TouchableOpacity
             style={styles.backButton}
             onPress={onBack}
+            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
@@ -53,6 +66,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0,
   },
   navBar: {
     paddingHorizontal: 20,
@@ -68,6 +82,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
     minWidth: 44,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   backText: {
     fontSize: 16,
