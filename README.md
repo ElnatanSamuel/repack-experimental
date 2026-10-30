@@ -1,25 +1,23 @@
-# CBE Micro-Frontend SuperApp (Re.Pack 5 + Module Federation)
-
-Dynamic Native Micro-Frontend SuperApp built with **React Native 0.80.3**, **Re.Pack 5.4.2**, **Rspack 1.7.12**, and **Hermes**.
-
-Feature services are compiled as independent remote containers, hosted locally on port `8088`, and dynamically loaded over-the-air (OTA) on-demand into the Host Shell.
-
----
+Re.Pack
 
 ## Quick Start: How to Run the App
 
 You only need two commands in two terminal windows:
 
 ### Terminal 1: Start the Development & Chunk Servers
+
 ```bash
 npm start
 ```
+
 > **What this does automatically:**
+>
 > 1. Runs `prestart` to compile all remote mini-apps into `dist/chunks/`.
 > 2. Starts the Re.Pack Host DevServer on **port 8081** (`index.bundle`).
 > 3. Spawns the embedded static Chunk Server on **port 8088** (`dist/chunks/`).
 
 ### Terminal 2: Launch the Android App
+
 ```bash
 npm run android
 ```
@@ -31,12 +29,19 @@ npm run android
 Adding a new service requires **3 steps**:
 
 ### Step 1: Create your Service Component
+
 Create your screen component under `src/services/<serviceName>/<ScreenName>.tsx`:
 
 ```tsx
 // src/services/loyaltyService/LoyaltyScreen.tsx
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
 
 export default function LoyaltyScreen({ onBack }: { onBack?: () => void }) {
   return (
@@ -62,6 +67,7 @@ const styles = StyleSheet.create({
 ---
 
 ### Step 2: Register Container in `rspack.config.mjs`
+
 Add your service as a **top-level key** in `export const MINI_APPS` inside `rspack.config.mjs`:
 
 ```javascript
@@ -75,7 +81,8 @@ export const MINI_APPS = {
   payment_service: {
     name: 'payment_service',
     exposes: {
-      './PaymentQuickPayScreen': './src/services/paymentService/PaymentQuickPayScreen.tsx',
+      './PaymentQuickPayScreen':
+        './src/services/paymentService/PaymentQuickPayScreen.tsx',
     },
   },
   // ADD YOUR NEW SERVICE HERE (top-level key, valid JS identifier with underscores):
@@ -89,6 +96,7 @@ export const MINI_APPS = {
 ```
 
 > [!CAUTION]
+>
 > - **Top-Level Only**: Do not accidentally nest your service inside another service object.
 > - **Naming**: Use underscores (`loyalty_service`), never hyphens (`loyalty-service`), because Module Federation attaches containers to global JavaScript identifiers (`self.<name>`).
 
@@ -97,6 +105,7 @@ export const MINI_APPS = {
 ### Step 3: Wire into the Host Dashboard (`src/screens/HomeScreen.tsx`)
 
 1. **Import with `createFederatedScreen`**:
+
    ```typescript
    const RemoteLoyaltyScreen = createFederatedScreen(
      () => Federated.importModule('loyalty_service', './LoyaltyScreen'),
@@ -105,11 +114,13 @@ export const MINI_APPS = {
    ```
 
 2. **Add to `ActiveView` union**:
+
    ```typescript
    type ActiveView = 'home' | 'news' | 'payment' | 'loyalty';
    ```
 
 3. **Add View Switch Condition**:
+
    ```typescript
    if (activeView === 'loyalty') {
      return <RemoteLoyaltyScreen onBack={() => setActiveView('home')} />;
@@ -117,6 +128,7 @@ export const MINI_APPS = {
    ```
 
 4. **Add UI Card in ScrollView**:
+
    ```tsx
    <TouchableOpacity
      style={styles.serviceCard}
